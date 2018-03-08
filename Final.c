@@ -9,24 +9,26 @@
 #include <stdbool.h>  
 #include <time.h>
 
+
+//TODO - Implement the new direction tracking for phase 2, make the robot go faster by precomputing the straight moves and then multiplying 130 by the required factor
 int V = 16;
 
 int irRight = 0;
-int irRightT = 0;
-int irLeftT = 0;
+//int irRightT = 0;
+//int irLeftT = 0;
 
 int irLeft = 0;
 int dist = 0;
-int irLeftTicks,irRightTicks,irLeftTicksBefore = 0,irRightTicksBefore = 0;
+//int irLeftTicks,irRightTicks,irLeftTicksBefore = 0,irRightTicksBefore = 0;
 
-int matrixForVals[17][4];
-int matrixForCells[5][4];
+//int matrixForVals[17][4];
+//int matrixForCells[5][4];
 
 bool visited[16];
 int parent[16],shortestPath[16];
 
 int x = 0;
-
+//---------------------------------stack---------------------------
 struct StackNode
 {
     int data;
@@ -391,6 +393,7 @@ void dijkstra(struct Graph* graph, int src)
 
 void makeZero()
 {
+  /*
   for(int i = 0;i<5;i++)
   {
     for(int j = 0;j<4;j++)
@@ -406,6 +409,7 @@ void makeZero()
       matrixForVals[i][j] = 0;
     }
   }
+  */
 
   for(int k = 0 ; k < 16 ; k++)
   {
@@ -418,6 +422,8 @@ void makeZero()
     shortestPath[i] = -1;
   }
 }
+
+
 
 void getLeftDist()
 {
@@ -462,17 +468,19 @@ int randomnum()
 
 void driveDefault()
 {
-  drive_goto(125,125);
+  drive_goto(127,127);
 }
 
 void turnLeft()
 {
   drive_goto(-26,25);
+  drive_goto(-1,0);
 }
 
 void turnRight()
 {
   drive_goto(26,-25);
+  drive_goto(0,-1);
 }
 
   bool checkWall()
@@ -492,7 +500,7 @@ bool checkLeftObstruction()
 {
   getLeftDist();
 
-  if(irLeft < 20)
+  if(irLeft < 19)
     return true;
   else
     return false;
@@ -518,6 +526,7 @@ void getInitial()
   dist = getWallDist();
  
 }
+/*
 
 bool checkInit(int leftDist,int rightDist, int wallDist)
 {
@@ -537,13 +546,15 @@ bool checkInit(int leftDist,int rightDist, int wallDist)
     return false;
 
 }
-
+*/
 void followLeft()
 {
   int y=0,x=0;
   int direction = 0;
   getInitial();
   makeZero();
+
+
 
   int V = 17;
   struct Graph* graph = createGraph(V);
@@ -661,51 +672,169 @@ void followLeft()
   else
     printf("false\n");
   */
+  if(direction == 3)
+  {
   turnLeft();
   drive_goto(10,10);
   turnRight();
   turnRight();
+  }
+
+  else if(direction == 2)
+  {
+    drive_goto(10,10);
+    turnRight();
+    turnRight();
+  }
+
+
 
   dijkstra(graph,0);
 
-  drive_goto(15,15);
+  drive_goto(12,12);
 
-  int cc = 0;
+  int cellCount = 0,newDirection = 0;
 
+//----------------------phase2------------------
+  
 while(!isE(st))
 {
-  int dir = pop(&st);
+  int currentCell = pop(&st);
 
-  if((dir - cc) == 1)
+  if((currentCell - cellCount) == 1)
   {
+    if(newDirection == 1)
+    {
+      driveDefault();
+      cellCount += 1;
+    }
+
+    else if(newDirection == 2)
+    {
+      turnLeft();
+      driveDefault();
+      cellCount += 1;
+      newDirection -= 1;
+    }
+
+    else if(newDirection == 0)
+    {
+      turnRight();
+      driveDefault();
+      cellCount += 1;
+      newDirection += 1;
+    }
+
+    /*
+    else
+    {
     turnRight();
     driveDefault();
     turnLeft();
-    cc += 1;
+    cellCount += 1;
+    }
+    */
   }
 
-  else if((dir - cc) == -1)
+  else if((currentCell - cellCount) == -1)
   {
+
+    if(newDirection == 0)
+    {
+      turnLeft();
+      driveDefault();
+      newDirection -= 1;
+      cellCount -= 1;
+    }
+
+    else if(newDirection == 2)
+    {
+      turnRight();
+      driveDefault();
+      cellCount -= 1;
+      newDirection += 1;
+    }
+
+    else if(newDirection == 3)
+    {
+      driveDefault();
+      cellCount += -1;
+    }
+    /*
+    else if()
     turnLeft();
     driveDefault();
     turnRight();
-    cc -= 1;
+    cellCount -= 1;
+    */
   }
+ //might break here if i try to remove the extra turn and leave it without keeping track of new direction for phase 2
 
-  else if((dir - cc) == 4)
+  else if((currentCell - cellCount) == 4)
   {
+    if(newDirection == 0)
+    {
     driveDefault();
-    cc += 4;
+    cellCount += 4;
+    }
+
+    else if(newDirection == 1)
+    {
+      turnLeft();
+      driveDefault();
+      cellCount += 4;
+      newDirection -= 1;
+    }
+
+    else if(newDirection == 3)
+    {
+      turnRight();
+      driveDefault();
+      cellCount += 4;
+      newDirection += 1;
+    }
   }
 
-  else if((dir - cc) == -4)
+  else if((currentCell - cellCount) == -4)
   {
+    if(newDirection == 1)
+    {
+      turnRight();
+      driveDefault();
+      cellCount -= 4;
+      newDirection += 1;
+    }
+
+    else if(newDirection == 2)
+    {
+      driveDefault();
+      cellCount -= 4;
+    }
+
+    else if(newDirection == 3)
+    {
+      turnLeft();
+      driveDefault();
+      cellCount -= 4;
+      newDirection -= 1;
+    }
+    /*
     turnLeft();
     turnLeft();
     driveDefault();
     turnRight();
     turnRight();
+    cellCount -= 4;
+    */
   }
+
+
+  if(newDirection < 0)
+    newDirection += 4;
+
+  else if(newDirection > 3)
+    newDirection -= 4;
+
 
 }
   
