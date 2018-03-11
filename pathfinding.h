@@ -1,6 +1,3 @@
-# ifdef PATHFINDING_H_
-# define PATHFINDING_H_
-
 // --------------------------STACK------------------------------------
 struct StackNode
 {
@@ -361,5 +358,3 @@ void dijkstra(struct Graph* graph, int src)
     //printSolution(dist, V, parent);
     printPath(parent,15);
 }
- 
- #endif

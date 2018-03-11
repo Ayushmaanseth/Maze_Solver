@@ -11,7 +11,6 @@
 #include <time.h>
 
 
-//TODO - Implement the new direction tracking for phase 2, make the robot go faster by precomputing the straight moves and then multiplying 130 by the required factor
 int V = 16;
 
 int irRight = 0;
@@ -27,24 +26,6 @@ int x = 0;
 
 void makeZero()
 {
-  /*
-  for(int i = 0;i<5;i++)
-  {
-    for(int j = 0;j<4;j++)
-    {
-      matrixForCells[i][j] = 0;
-    }
-  }
-
-  for(int i = 0;i<17;i++)
-  {
-    for(int j = 0;j<4;j++)
-    {
-      matrixForVals[i][j] = 0;
-    }
-  }
-  */
-
   for(int k = 0 ; k < 16 ; k++)
   {
   visited[k] = false;
@@ -82,9 +63,7 @@ void getRightDist()
       dac_ctr(26, 0, dacVal);                       // <- add
       freqout(1, 1, 38000);                        // <- add
       irRight += input(2);
-    }
-
-        
+    }   
 }
 
 int getWallDist()
